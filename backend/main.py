@@ -25,7 +25,6 @@ class LeadRequest(BaseModel):
     message: str
 
 class LeadResponse(BaseModel):
-    name: str
     email: str
     message: str
     ai_reply: str
