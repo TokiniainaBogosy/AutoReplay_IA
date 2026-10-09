@@ -1,43 +1,114 @@
 // frontend/src/App.jsx
 import { useState } from 'react'
+import { FileText, LayoutDashboard } from 'lucide-react'
 import LeadForm from './components/LeadForm'
 import ResponseCard from './components/ResponseCard'
+import Dashboard from './components/Dashboard'
+import LoginModal from './components/LoginModal'
+import { getApiKey } from './api'
 
 export default function App() {
   const [response, setResponse] = useState(null)
+  const [view, setView] = useState('public')
+  const [showLogin, setShowLogin] = useState(false)
+  const [isAuthed, setIsAuthed] = useState(!!getApiKey())
+
+  const handleAdminClick = () => {
+    if (isAuthed) setView('admin')
+    else setShowLogin(true)
+  }
+
+  const handleLoginSuccess = () => {
+    setIsAuthed(true)
+    setShowLogin(false)
+    setView('admin')
+  }
+
+  const handleLogout = () => {
+    setIsAuthed(false)
+    setView('public')
+  }
 
   return (
-    <div className="gradient-bg min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col bg-[#08090a]">
       {/* Header */}
-      <header className="text-center mb-10 animate-fade-in-up">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full 
-                        glass text-xs font-medium text-indigo-300 mb-4">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Propulsé par l'IA
+      <header className="border-b border-[#1f2023]">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          {/* Logo */}
+          <button
+            onClick={() => setView('public')}
+            className="flex items-center gap-2.5 group"
+          >
+            <div className="w-5 h-5 rounded bg-gradient-to-br from-[#5e6ad2] to-[#8b5cf6]
+                            group-hover:opacity-80 transition-opacity" />
+            <span className="text-sm font-medium text-[#f7f8f8] tracking-tight">
+              AutoReply
+            </span>
+            <span className="text-[10px] font-medium text-[#62666d] border border-[#2a2b2f]
+                             rounded px-1.5 py-0.5 ml-1">
+              BETA
+            </span>
+          </button>
+
+          {/* Nav */}
+          <nav className="flex items-center gap-1">
+            <button
+              onClick={() => setView('public')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors
+                ${view === 'public'
+                  ? 'text-[#f7f8f8] bg-[#16171a]'
+                  : 'text-[#8a8f98] hover:text-[#f7f8f8] hover:bg-[#16171a]'
+                }`}
+            >
+              <FileText className="w-3.5 h-3.5" strokeWidth={1.5} />
+              Formulaire
+            </button>
+            <button
+              onClick={handleAdminClick}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors
+                ${view === 'admin'
+                  ? 'text-[#f7f8f8] bg-[#16171a]'
+                  : 'text-[#8a8f98] hover:text-[#f7f8f8] hover:bg-[#16171a]'
+                }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={1.5} />
+              Dashboard
+            </button>
+          </nav>
         </div>
-        <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r 
-                       from-white via-indigo-200 to-purple-300 
-                       bg-clip-text text-transparent mb-3">
-          AutoReply AI
-        </h1>
-        <p className="text-slate-400 text-lg max-w-md mx-auto">
-          Automatisez vos réponses clients avec l'intelligence artificielle générative.
-        </p>
       </header>
 
-      {/* Contenu principal */}
-      <main className="w-full flex justify-center">
-        {response ? (
-          <ResponseCard data={response} onReset={() => setResponse(null)} />
-        ) : (
-          <LeadForm onSuccess={setResponse} />
-        )}
+      {/* Contenu */}
+      <main className="flex-1 px-6 py-12">
+        <div className="max-w-2xl mx-auto">
+          {view === 'public' ? (
+            response ? (
+              <ResponseCard data={response} onReset={() => setResponse(null)} />
+            ) : (
+              <LeadForm onSuccess={setResponse} />
+            )
+          ) : (
+            <div className="max-w-5xl mx-auto">
+              <Dashboard onLogout={handleLogout} />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="mt-10 text-slate-600 text-sm">
-        © 2026 AutoReply AI — Projet portfolio
+      <footer className="border-t border-[#1f2023] py-6">
+        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-xs text-[#62666d]">
+          <span>© 2026 AutoReply</span>
+          <span>Propulsé par Groq</span>
+        </div>
       </footer>
+
+      {showLogin && (
+        <LoginModal
+          onLogin={handleLoginSuccess}
+          onClose={() => setShowLogin(false)}
+        />
+      )}
     </div>
   )
 }

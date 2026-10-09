@@ -15,3 +15,54 @@ export async function generateReply({ name, email, message }) {
 
   return res.json()
 }
+
+// frontend/src/api.js
+
+// ... generateReply existant ...
+
+// --- Auth ---
+export function saveApiKey(key) {
+  localStorage.setItem('autoreply_api_key', key)
+}
+
+export function getApiKey() {
+  return localStorage.getItem('autoreply_api_key')
+}
+
+export function clearApiKey() {
+  localStorage.removeItem('autoreply_api_key')
+}
+
+// --- Routes admin (protégées) ---
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'X-API-Key': getApiKey() || ''
+  }
+}
+
+export async function fetchLeads() {
+  const res = await fetch(`${API_URL}/leads`, { headers: authHeaders() })
+  if (res.status === 401) throw new Error('UNAUTHORIZED')
+  if (!res.ok) throw new Error('Erreur lors du chargement des leads')
+  return res.json()
+}
+
+export async function updateLeadStatus(id, status) {
+  const res = await fetch(`${API_URL}/leads/${id}/status`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ status })
+  })
+  if (!res.ok) throw new Error('Erreur lors de la mise à jour')
+  return res.json()
+}
+
+export async function deleteLead(id) {
+  const res = await fetch(`${API_URL}/leads/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  if (!res.ok) throw new Error('Erreur lors de la suppression')
+  return true
+}

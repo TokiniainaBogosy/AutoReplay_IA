@@ -1,45 +1,51 @@
 // frontend/src/components/ResponseCard.jsx
+import { ArrowLeft, Sparkles } from 'lucide-react'
+
 export default function ResponseCard({ data, onReset }) {
   return (
-    <div className="glass rounded-2xl p-8 shadow-2xl w-full max-w-xl animate-fade-in-up">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 
-                        flex items-center justify-center text-white font-bold shadow-lg">
-          ✓
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">Réponse générée</h2>
-          <p className="text-slate-400 text-sm">par notre assistant IA</p>
-        </div>
-      </div>
-
-      <div className="bg-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700/50">
-        <p className="text-xs text-slate-500 mb-1">Message original de {data.name}</p>
-        <p className="text-slate-300 text-sm italic">"{data.message}"</p>
-      </div>
-
-      <div className="bg-gradient-to-br from-indigo-950/50 to-purple-950/50 
-                      rounded-xl p-5 border border-indigo-500/20 mb-6">
-        <p className="text-xs text-indigo-300 font-medium mb-2">✉️ RÉPONSE IA</p>
-        <p className="text-slate-100 leading-relaxed whitespace-pre-wrap">
-          {data.ai_reply}
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-[#f7f8f8] tracking-tight mb-2">
+          Réponse générée
+        </h1>
+        <p className="text-sm text-[#8a8f98]">
+          Lead #{data.id} • Statut : {data.status}
         </p>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-        <span>Statut : <span className="text-emerald-400 font-medium">{data.status}</span></span>
-        <span>Lead #{data.id}</span>
+      <div className="mb-6 pb-6 border-b border-[#1f2023]">
+        <p className="text-xs font-medium text-[#8a8f98] uppercase tracking-wide mb-2">
+          Message de {data.name}
+        </p>
+        <p className="text-sm text-[#c9cdd2] italic">
+          "{data.message}"
+        </p>
       </div>
 
-      <button
-        onClick={onReset}
-        className="w-full py-3 rounded-lg font-medium text-slate-300
-                   bg-slate-800/50 border border-slate-700
-                   hover:bg-slate-700/50 hover:text-white
-                   transition"
-      >
-        ← Nouveau message
-      </button>
+      <div className="mb-8">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-[#5e6ad2]" strokeWidth={1.5} />
+          <p className="text-xs font-medium text-[#5e6ad2] uppercase tracking-wide">
+            Réponse IA
+          </p>
+        </div>
+        <div className="text-sm text-[#f7f8f8] leading-relaxed whitespace-pre-wrap">
+          {data.ai_reply}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onReset}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md
+                     text-[#8a8f98] hover:text-[#f7f8f8]
+                     border border-[#2a2b2f] hover:border-[#3a3b3f]
+                     transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
+          Nouveau message
+        </button>
+      </div>
     </div>
   )
 }
