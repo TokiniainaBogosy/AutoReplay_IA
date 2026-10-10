@@ -1,10 +1,13 @@
 // frontend/src/App.jsx
+// frontend/src/App.jsx
 import { useState } from 'react'
 import { FileText, LayoutDashboard } from 'lucide-react'
 import LeadForm from './components/LeadForm'
 import ResponseCard from './components/ResponseCard'
 import Dashboard from './components/Dashboard'
 import LoginModal from './components/LoginModal'
+import ToastContainer from './components/ToastContainer'
+import { useToast } from './hooks/useToast'
 import { getApiKey } from './api'
 
 export default function App() {
@@ -12,6 +15,7 @@ export default function App() {
   const [view, setView] = useState('public')
   const [showLogin, setShowLogin] = useState(false)
   const [isAuthed, setIsAuthed] = useState(!!getApiKey())
+  const { toasts, removeToast, toast } = useToast()
 
   const handleAdminClick = () => {
     if (isAuthed) setView('admin')
@@ -22,11 +26,13 @@ export default function App() {
     setIsAuthed(true)
     setShowLogin(false)
     setView('admin')
+    toast.success('Connexion réussie')
   }
 
   const handleLogout = () => {
     setIsAuthed(false)
     setView('public')
+    toast.info('Déconnexion réussie')
   }
 
   return (
@@ -85,16 +91,18 @@ export default function App() {
             response ? (
               <ResponseCard data={response} onReset={() => setResponse(null)} />
             ) : (
-              <LeadForm onSuccess={setResponse} />
+              <LeadForm onSuccess={(data) => {
+                setResponse(data)
+                toast.success('Réponse IA générée')
+              }} />
             )
           ) : (
             <div className="max-w-5xl mx-auto">
-              <Dashboard onLogout={handleLogout} />
+              <Dashboard onLogout={handleLogout} toast={toast} />
             </div>
           )}
         </div>
       </main>
-
       {/* Footer */}
       <footer className="border-t border-[#1f2023] py-6">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-xs text-[#62666d]">
@@ -109,6 +117,8 @@ export default function App() {
           onClose={() => setShowLogin(false)}
         />
       )}
+
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }

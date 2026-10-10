@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 import { updateLeadStatus, deleteLead } from '../api'
 
-export default function LeadRow({ lead, onUpdate, onDelete }) {
+export default function LeadRow({ lead, onUpdate, onDelete, toast }) {
   const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -14,8 +14,9 @@ export default function LeadRow({ lead, onUpdate, onDelete }) {
     try {
       await updateLeadStatus(lead.id, newStatus)
       onUpdate({ ...lead, status: newStatus })
+      toast.success(`Statut mis à jour : ${newStatus}`)
     } catch (err) {
-      alert(err.message)
+      toast.error(err.message)
     } finally {
       setBusy(false)
     }
@@ -27,11 +28,13 @@ export default function LeadRow({ lead, onUpdate, onDelete }) {
     try {
       await deleteLead(lead.id)
       onDelete(lead.id)
+      toast.success('Lead supprimé')
     } catch (err) {
-      alert(err.message)
+      toast.error(err.message)
       setBusy(false)
     }
   }
+
 
   const date = new Date(lead.created_at).toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'short', year: 'numeric',

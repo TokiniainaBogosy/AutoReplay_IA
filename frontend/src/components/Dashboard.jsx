@@ -3,8 +3,11 @@ import { useEffect, useState } from 'react'
 import { fetchLeads, clearApiKey } from '../api'
 import StatsCards from './StatsCard'
 import LeadRow from './LeadRow'
-import { RefreshCw, LogOut, Search, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { RefreshCw, LogOut, Search, Trash2, ChevronDown, ChevronUp,Download } from 'lucide-react'
 import { Inbox } from 'lucide-react'
+import { exportLeadsToCsv } from '../utils/exportCsv'
+import { useDebounce } from '../hooks/useDebounce'
+
 
 const FILTERS = [
   { key: 'all',      label: 'Tous' },
@@ -14,12 +17,22 @@ const FILTERS = [
   { key: 'archive',  label: '📦 Archivés' },
 ]
 
-export default function Dashboard({ onLogout }) {
+export default function Dashboard({ onLogout,toast }) {
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+
+  const handleExport = () => {
+    if (filteredLeads.length === 0) {
+      toast.info('Aucun lead à exporter')
+      return
+    }
+    exportLeadsToCsv(filteredLeads)
+    toast.success(`${filteredLeads.length} lead(s) exporté(s)`)
+  }
 
   const loadLeads = async () => {
     setLoading(true)
@@ -49,14 +62,27 @@ export default function Dashboard({ onLogout }) {
   }
 
   const filteredLeads = leads
-    .filter(l => filter === 'all' || l.status === filter)
-    .filter(l => {
-      if (!search) return true
-      const s = search.toLowerCase()
-      return l.name.toLowerCase().includes(s)
-          || l.email.toLowerCase().includes(s)
-          || l.message.toLowerCase().includes(s)
-    })
+  .filter(l => filter === 'all' || l.status === filter)
+  .filter(l => {
+    if (!debouncedSearch) return true
+    const s = debouncedSearch.toLowerCase()
+    return l.name.toLowerCase().includes(s)
+        || l.email.toLowerCase().includes(s)
+        || l.message.toLowerCase().includes(s)
+  })
+
+  useEffect(() => {
+  const interval = setInterval(() => {
+      // silencieux : pas de setLoading(true)
+      fetchLeads()
+        .then(setLeads)
+        .catch(err => {
+          if (err.message === 'UNAUTHORIZED') onLogout()
+        })
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -67,6 +93,10 @@ export default function Dashboard({ onLogout }) {
           <h2 className="text-3xl font-bold text-white">Dashboard</h2>
           <p className="text-slate-400 text-sm">Gestion des leads</p>
         </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#62666d]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#4cb782] animate-pulse" />
+          Live
+        </div>
         <div className="flex gap-2">
           <button
             onClick={loadLeads}
@@ -75,7 +105,16 @@ export default function Dashboard({ onLogout }) {
                       transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" strokeWidth={1.5} />
-            Rafraîchir
+            <span className="hidden sm:inline">Rafraîchir</span>
+          </button>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md
+                      text-[#8a8f98] hover:text-[#f7f8f8] hover:bg-[#16171a]
+                      transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
+            Export CSV
           </button>
 
           <button
@@ -158,6 +197,7 @@ export default function Dashboard({ onLogout }) {
               lead={lead}
               onUpdate={handleUpdate}
               onDelete={handleDelete}
+              toast={toast}
             />
           ))}
         </div>
