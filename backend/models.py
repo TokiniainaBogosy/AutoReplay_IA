@@ -17,7 +17,7 @@ class Lead(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     ai_reply : Mapped[str] = mapped_column(Text, nullable=True)
     status : Mapped[LeadStatus] = mapped_column(Enum(LeadStatus), default=LeadStatus.NOUVEAU, nullable=False,server_default=LeadStatus.NOUVEAU.value)
